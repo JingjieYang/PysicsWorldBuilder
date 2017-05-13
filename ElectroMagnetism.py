@@ -9,56 +9,105 @@ import numpy as np
 # 3. Explain equipotentials and their relation to work (energy)
 
 
-class FixedChargeContainer:
+class ChargeSystem:
     """Implementation of a fixed charged container"""
-    def __init__(self, dimension=2):
+    def __init__(self, dimension):
         self.fixed_charges = []
         self.dimension = dimension
 
-    def add_fixed_charge(self, charge: 'FixedCharge'):
+    def add_fixed_charge(self, charge: 'Charge'):
         self.fixed_charges.append(charge)
+
+    def update(self):
+        """Update the position and velocity of charges"""
+        for charge in self:
+            charge.update()
+        # Avoid side effects
+        for charge in self:
+            charge.position = charge.new_position
 
     def __iter__(self):
         return (charge for charge in self.fixed_charges)
 
 
-class FixedCharge:
+class Charge:
     """Implementation of a fixed charge"""
-    def __init__(self, charge: float, container: 'FixedChargeContainer', pos_x=0., pos_y=0.):
+    def __init__(self, charge: float, container: 'ChargeSystem', position=None, mass=1.):
         # Add it to the world
         self.container = container
+        dimension = self.container.dimension
+
+        if position is not None:
+            assert dimension == len(position), "Dimensions of the container and the charge must agree"
+            self.position = position
+        else:
+            self.position = np.array([0.] * dimension)
         container.add_fixed_charge(self)
 
         self.charge = charge
-        self.position = np.array([pos_x, pos_y])
+        self.mass = mass
 
-    def calculate_attraction_force(self, charge2: 'FixedCharge'):
-        # Calculate the attraction between two fixed_charges according to the Coulomb Law
-        k = 9 * 10 ** 9
-        c1, c2 = self.charge, charge2.charge
+        self.velocity = np.array([0.] * dimension)
+        self.acceleration = np.array([0.] * dimension)
+        self.new_position = None
+
+    def calculate_attraction_force(self, charge2: 'Charge') -> np.array:
+        """Calculate the attraction between two fixed_charges according to the Coulomb Law"""
+        k = 9 * 10 ** 9  # 8.99 * 10 ** 9 to be more precise
+        q1, q2 = self.charge, charge2.charge
 
         distance_vector = charge2.position - self.position
+        print(distance_vector)
 
         distance_norm = np.linalg.norm(distance_vector)
         distance_unit = distance_vector / distance_norm
 
-        magnitude = k * (c1 * c2) / (np.linalg.norm(distance_norm)) ** 2
+        magnitude = k * (q1 * q2) / (np.linalg.norm(distance_norm)) ** 2
+
+        print(self.position)
+        print(distance_unit, '<<<<<<')
         return magnitude * distance_unit
 
-    def calculate_net_force(self):
+    def calculate_net_force(self) -> np.array:
         return sum([
             self.calculate_attraction_force(charge) for charge in self.container
             if charge is not self
         ])
 
+    def calculate_acceleration(self) -> np.array:
+        """Calculate the acceleration of this charge based on the formula F = m a"""
+        F = self.calculate_net_force()
+        m = self.mass
+        a = F / m
+        print(a, '>>>>>>')
 
-if __name__ == '__name__':
+        return a
+
+    def update(self, force=False):
+        """Update the acceleration and velocity of a charge
+        Unless the option 'force' is set to True, the position will not be updated
+        To update it, use FixedChargeContainer.update()"""
+        self.acceleration = self.calculate_acceleration()
+        self.velocity += self.acceleration
+
+        if force:
+            self.position += self.velocity
+        else:
+            self.new_position = self.position + self.velocity
+
+
+if __name__ == '__main__':
     # Hint: lol references
-    void = FixedChargeContainer()
+    void = ChargeSystem(3)
     # Add the champions in the game
-    vel_koz = FixedCharge(5 * 10 ** -5, void, pos_x=0)
-    cho_gath = FixedCharge(5 * 10 ** -5, void, pos_x=0.025)
-    kha_zix = FixedCharge(-2.5 * 10 ** -5, void, pos_x=0.025 + 0.02)
+    c1 = Charge(5 * 10 ** -5, void, position=np.array([10, 10, 10]))
+    c2 = Charge(-5 * 10 ** -5, void, position=np.array([0, 0, 0]))
+    # vel_koz = Charge(5 * 10 ** -5, void, position=np.array([0, 0, 0]))
+    # cho_gath = Charge(5 * 10 ** -5, void, position=np.array([0.025, 0, 0]))
+    # kha_zix = Charge(-2.5 * 10 ** -5, void, position=np.array([0.025 + 0.02, 0, 0]))
 
-    for charge_ in void:
-        print(charge_.calculate_net_force())
+    for i in range(2):
+        print(f"==={i}")
+        for champion in void:
+            print(champion.position)
+        void.update()
