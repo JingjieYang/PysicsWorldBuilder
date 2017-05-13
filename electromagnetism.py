@@ -24,7 +24,7 @@ class ChargeSystem:
             charge.update()
         # Avoid side effects
         for charge in self:
-            charge.position = charge.new_position
+            charge.position = charge.new_position  # Interesting.
 
     def __iter__(self):
         return (charge for charge in self.fixed_charges)
@@ -39,16 +39,18 @@ class Charge:
 
         if position is not None:
             assert dimension == len(position), "Dimensions of the container and the charge must agree"
+            if type(position) is list:
+                position = np.array(position)
             self.position = position
         else:
-            self.position = np.array([0.] * dimension)
+            self.position = np.zeros(dimension, dtype=float)
         container.add_fixed_charge(self)
 
         self.charge = charge
         self.mass = mass
 
-        self.velocity = np.array([0.] * dimension)
-        self.acceleration = np.array([0.] * dimension)
+        self.velocity = np.zeros(dimension, dtype=float)
+        self.acceleration = np.zeros(dimension, dtype=float)
         self.new_position = None
 
     def calculate_attraction_force(self, charge2: 'Charge') -> np.array:
@@ -79,10 +81,10 @@ class Charge:
 
         return a
 
-    def update(self, force=False):
+    def update(self, force=False) -> None:
         """Update the acceleration and velocity of a charge
         Unless the option 'force' is set to True, the position will not be updated
-        To update it, use FixedChargeContainer.update()"""
+        To update it, use ChargeSystem.update()"""
         self.acceleration = self.calculate_acceleration()
         self.velocity += self.acceleration
 
@@ -92,20 +94,29 @@ class Charge:
             self.new_position = self.position + self.velocity
 
 
-if __name__ == '__main__':
-    # Hint: lol references
-    void = ChargeSystem(3)
-    # Add the champions in the game
-    c1 = Charge(5 * 10 ** -5, void, position=np.array([10, 10, 10]))
-    c2 = Charge(-5 * 10 ** -5, void, position=np.array([0, 0, 0]))
-    # vel_koz = Charge(5 * 10 ** -5, void, position=np.array([0, 0, 0]))
-    # cho_gath = Charge(5 * 10 ** -5, void, position=np.array([0.025, 0, 0]))
-    # kha_zix = Charge(-2.5 * 10 ** -5, void, position=np.array([0.025 + 0.02, 0, 0]))
-    # for champion in void:
-    #     print(champion.calculate_net_force())
+def process_coordinates(void: 'ChargeSystem', steps: int) -> list:
+    """
+    Process coordinates for blender animations
+    :param void: the void you want to process
+    :param steps: int to show how many steps to calculate
+    :return: list of list of coordinate lists
+    ex: [
+        [[x1, y1, z1], [x2, y2, z2], ...] # charge 1
+        [[x1, y1, z1], [x2, y2, z2], ...] # charge 2
+        ...
+    ]
+    """
+    result = [[] for _ in void]
 
-    for i in range(16):
-        print(f"==={i}")
-        for champion in void:
-            print(champion.position)
+    for _ in range(steps):
+        for ind, charge in enumerate(void):
+            result[ind].append(list(charge.position))
         void.update()
+
+    return result
+
+if __name__ == '__main__':
+    void_ = ChargeSystem(3)
+    c1 = Charge(5 * 10 ** -5, void_, position=[10, 10, 10])
+    c2 = Charge(-5 * 10 ** -5, void_, position=[0, 0, 0])
+    print(process_coordinates(void_, 16))

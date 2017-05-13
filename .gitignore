@@ -142,3 +142,6 @@ ENV/
 # Rope project settings
 .ropeproject
 .idea/
+
+# Blender files
+*.blend1
