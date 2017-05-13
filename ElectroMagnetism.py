@@ -56,16 +56,13 @@ class Charge:
         k = 9 * 10 ** 9  # 8.99 * 10 ** 9 to be more precise
         q1, q2 = self.charge, charge2.charge
 
-        distance_vector = charge2.position - self.position
-        print(distance_vector)
+        distance_vector = self.position - charge2.position
 
         distance_norm = np.linalg.norm(distance_vector)
         distance_unit = distance_vector / distance_norm
 
         magnitude = k * (q1 * q2) / (np.linalg.norm(distance_norm)) ** 2
 
-        print(self.position)
-        print(distance_unit, '<<<<<<')
         return magnitude * distance_unit
 
     def calculate_net_force(self) -> np.array:
@@ -79,7 +76,6 @@ class Charge:
         F = self.calculate_net_force()
         m = self.mass
         a = F / m
-        print(a, '>>>>>>')
 
         return a
 
@@ -105,8 +101,10 @@ if __name__ == '__main__':
     # vel_koz = Charge(5 * 10 ** -5, void, position=np.array([0, 0, 0]))
     # cho_gath = Charge(5 * 10 ** -5, void, position=np.array([0.025, 0, 0]))
     # kha_zix = Charge(-2.5 * 10 ** -5, void, position=np.array([0.025 + 0.02, 0, 0]))
+    # for champion in void:
+    #     print(champion.calculate_net_force())
 
-    for i in range(2):
+    for i in range(16):
         print(f"==={i}")
         for champion in void:
             print(champion.position)
