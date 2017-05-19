@@ -1,0 +1,1 @@
+blender blender_files/viewer.blend --python blender_script.py

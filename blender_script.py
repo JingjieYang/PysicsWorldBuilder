@@ -5,9 +5,8 @@ import sys
 import bpy
 # required for import
 token = '/' if '/' == bpy.data.filepath[0] else '\\'  # cross-OS
-sys.path.append(
-    token.join(bpy.data.filepath.split(token)[:-2])
-)
+path_to_add = token.join(bpy.data.filepath.split(token)[:-1])
+sys.path.append(path_to_add)
 from electromagnetism import ChargeSystem, Charge, process_coordinates
 
 

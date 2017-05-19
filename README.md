@@ -1,2 +1,5 @@
-# PysicsWorldBuilder
- Building up this world with simulation, physics, maths, python and blender
+# Pyxi
+
+Charge movement simulator, with python + blender
+
+<center><img src="demo_gifs/demo1.gif"></img></center>
