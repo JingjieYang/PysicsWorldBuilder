@@ -5,9 +5,10 @@ import sys
 import bpy
 # required for import
 token = '/' if '/' == bpy.data.filepath[0] else '\\'  # cross-OS
-path_to_add = token.join(bpy.data.filepath.split(token)[:-1])
-sys.path.append(path_to_add)
-from electromagnetism import ChargeSystem, Charge, process_coordinates
+sys.path.append(
+    token.join(bpy.data.filepath.split(token)[:-2])
+)
+from electromagnetism import ChargeSystem, Charge, process_coordinates, FixedCharge
 
 
 def electron_animation_from_coords(name: str, coords: list, initial_location=(0, 0, 0), frames_per_keyframe=1) -> None:
@@ -26,12 +27,10 @@ def electron_animation_from_coords(name: str, coords: list, initial_location=(0,
         electron_object.location = tuple(coord)
         electron_object.keyframe_insert("location", frame=f * frames_per_keyframe)
 
-
 v = ChargeSystem(3)
-c1 = Charge(-5 * 10 ** -5, v, position=[-10, -10, 0])
-c2 = Charge(5 * 10 ** -5, v, position=[0, 10, 0])
-c3 = Charge(3 * 10 ** -5, v, position=[10, 0, 0])
+c1 = FixedCharge(1e-5, v, position=[-10, 0, 0])
+c2 = Charge(-2.5e-5, v, position=[2.1, -10, -10])
+c3 = FixedCharge(1 * 10 ** -5, v, position=[10, 0, 0])
 anim = process_coordinates(v, 1200)
-
 for ind, charge_coords in enumerate(anim):
     electron_animation_from_coords('electron{}'.format(ind), charge_coords, initial_location=charge_coords[0])

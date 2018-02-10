@@ -1,14 +1,6 @@
 import numpy as np
 
 
-# TODO
-# 1. Explain using examples, the concept of field.
-#    Then use this to describe electric fields and their relation to electric force.
-# 2. Define the Volt and justify the use of V/m for E-fields
-#    Show that electric force in Newtons is consistent with E-field in V/m
-# 3. Explain equipotentials and their relation to work (energy)
-
-
 class ChargeSystem:
     """Implementation of a fixed charged container"""
     def __init__(self, dimension):
@@ -55,7 +47,7 @@ class Charge:
 
     def calculate_attraction_force(self, charge2: 'Charge') -> np.array:
         """Calculate the attraction between two fixed_charges according to the Coulomb Law"""
-        k = 9 * 10 ** 9  # 8.99 * 10 ** 9 to be more precise
+        k = 8.99e9
         q1, q2 = self.charge, charge2.charge
 
         distance_vector = self.position - charge2.position
@@ -87,11 +79,18 @@ class Charge:
         To update it, use ChargeSystem.update()"""
         self.acceleration = self.calculate_acceleration()
         self.velocity += self.acceleration
+        if np.linalg.norm(self.velocity) > 1:
+            self.velocity = self.velocity / np.linalg.norm(self.velocity)
 
         if force:
             self.position += self.velocity
         else:
             self.new_position = self.position + self.velocity
+
+
+class FixedCharge(Charge):
+    def update(self, force=False):
+        self.new_position = self.position
 
 
 def process_coordinates(void: 'ChargeSystem', steps: int) -> list:
@@ -117,6 +116,9 @@ def process_coordinates(void: 'ChargeSystem', steps: int) -> list:
 
 if __name__ == '__main__':
     void_ = ChargeSystem(3)
-    c1 = Charge(5 * 10 ** -5, void_, position=[10, 10, 10])
-    c2 = Charge(-5 * 10 ** -5, void_, position=[0, 0, 0])
-    print(process_coordinates(void_, 16))
+    c1 = Charge(-2e-9, void_, position=[-0.5, 0, 0])
+    c2 = Charge(-4e-9, void_, position=[0, 0, 0])
+    c3 = Charge(-8e-9, void_, position=[0.5, 0, 0])
+    print(c1.calculate_net_force())
+    print(c2.calculate_net_force())
+    print(c3.calculate_net_force())

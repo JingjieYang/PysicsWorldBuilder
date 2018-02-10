@@ -2,4 +2,5 @@
 
 Charge movement simulator, with python + blender
 
-<center><img src="demo_gifs/demo1.gif"></img></center>
+![moving charges](demo_gifs/demo1.gif)
+![fixed charges](demo_gifs/demo2.gif)
